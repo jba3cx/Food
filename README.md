@@ -1,84 +1,97 @@
 # 🍽️ Food Order Suggester
 
-A simple, collaborative website to help your team decide where to order food each day.
+A collaborative website to help your team decide where to order food each day.
 
 ## Features
 
-- **Add Restaurants**: Build a list of places your team likes to order from
+- **Multi-User Support**: Anyone can join with just a username (no login required)
+- **Add Restaurants**: Each person builds their own list of places to order from
 - **Like/Dislike**: Mark each restaurant as liked, disliked, or neutral
-- **Daily Voting**: Vote whether you'll be ordering today
-- **Smart Suggestions**: Get a daily suggestion based on team preferences of people ordering
-- **Local Storage**: All data persists in your browser (no server needed)
+- **Daily Voting**: Vote each day whether you'll be ordering
+- **Smart Suggestions**: Get a daily suggestion based on ALL team members' preferences (only counting those voting "Yes")
+- **No Backend Needed**: All data stored in browser local storage
 
 ## How to Use
 
-### 1. Add Restaurants
-- Type a restaurant name and click "Add"
-- You can add as many as you want
+### 1. Login with Your Name
+- Enter your username (no password needed!)
+- You'll see your own preferences and voting panel
 
-### 2. Set Your Preferences
+### 2. Add Your Favorite Restaurants
+- Type a restaurant name and click "Add"
+- Add as many as you want to your list
+
+### 3. Set Your Preferences
 - Click the ❤️ **Like** button to mark a restaurant as a favorite
 - Click the 👎 **Dislike** button to mark one you don't prefer
 - Click again to toggle off
 
-### 3. Vote Daily
+### 4. Vote Daily
 - Click **"Yes, I'm In!"** if you'll be ordering today
 - Click **"No, Not Today"** if you're not participating
-- Your vote resets automatically each day
+- See in real-time how many people are voting yes
 
-### 4. Get a Suggestion
+### 5. Get a Team Suggestion
 - Click **"Get Suggestion"** to get a recommendation
 - The algorithm considers:
-  - Places you like (higher priority)
-  - Places you've marked neutral (good for variety)
-  - Randomness (keeps it fun!)
+  - All restaurants from people voting "Yes"
+  - Likes (higher priority)
+  - Dislikes (lower priority) 
+  - Neutral votes (good for variety)
+  - A bit of randomness (keeps it fun!)
 
-### 5. Reset for Tomorrow
-- Click **"Reset for Tomorrow"** to clear votes and prepare for the next day
+### 6. Reset for Tomorrow
+- Your votes automatically reset each day at midnight
+- Or click **"Reset for Tomorrow"** to start fresh
+
+## Multi-User Setup
+
+Since everyone uses the same browser/device, each person can:
+1. Log out (top right button)
+2. Log in with their own name
+3. Add their preferences
+4. Vote
+
+Everyone's votes combine into one daily suggestion!
 
 ## Upload to GitHub
 
-1. **Initialize a Git Repository**
-   ```bash
-   git init
-   ```
+1. **Create a new repository on GitHub**
+   - Go to [github.com](https://github.com)
+   - Click the **+** icon in the top right → **New repository**
+   - Name it (e.g., `food-order-suggester`)
+   - Click **Create repository**
 
-2. **Add Files**
-   ```bash
-   git add .
-   ```
+2. **Upload your files**
+   - On the repo page, click **uploading an existing file**
+   - Drag and drop these files:
+     - `index.html`
+     - `README.md`
+     - `.gitignore`
+   - Click **Commit changes**
 
-3. **Commit**
-   ```bash
-   git commit -m "Initial commit: Food Order Suggester"
-   ```
-
-4. **Push to GitHub**
-   ```bash
-   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-   git branch -M main
-   git push -u origin main
-   ```
-
-5. **Enable GitHub Pages**
-   - Go to your repository on GitHub
-   - Navigate to **Settings** → **Pages**
-   - Select **Deploy from a branch**
-   - Choose **main** branch and **/(root)** folder
+3. **Enable GitHub Pages (to make it live)**
+   - Go to **Settings** (top of repo page)
+   - Scroll to **Pages** on the left sidebar
+   - Under "Branch", select **main**
    - Click **Save**
+   - Wait ~1 minute for the build
 
-Your site will be live at: `https://YOUR_USERNAME.github.io/YOUR_REPO_NAME/`
+4. **Done!** 
+   - Your site will be live at: `https://YOUR_USERNAME.github.io/REPO_NAME/`
+   - Share the link with your team!
 
 ## Notes
 
-- All data is stored in your browser's local storage
-- Data is **not** shared between different people's browsers by default
-- Each person needs to visit the site and add their preferences
-- Perfect for small teams with shared ordering habits
+- Each person needs to visit the site on the same device and enter their name
+- For a distributed team across devices, you'd need a backend database (future enhancement!)
+- Data persists until browser storage is cleared
+- Voting resets automatically each day at midnight
 
 ## Future Enhancements
 
-- Multi-user mode with shared voting
+- Shared backend for team across different devices
 - Restaurant history and ratings
-- Time-based preferences (Monday = pizza, Friday = something fancy)
+- Multiple workspace support
 - Import/export preferences
+- Dark mode

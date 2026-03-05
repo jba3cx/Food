@@ -116,6 +116,14 @@
             background: #e0e0e0;
         }
 
+        button.logout-btn {
+            background: #ff6b6b;
+        }
+
+        button.logout-btn:hover {
+            background: #ff5252;
+        }
+
         .restaurant-item {
             display: flex;
             align-items: center;
@@ -327,76 +335,96 @@
             <p class="tagline">Decide together, eat together</p>
         </header>
 
-        <div class="main-grid">
-            <!-- Preferences Card -->
-            <div class="card preferences">
-                <h2>Your Preferences</h2>
-                <div class="form-group">
-                    <input type="text" id="restaurantInput" placeholder="Enter restaurant name..."
-                        autocomplete="off">
-                    <button onclick="addRestaurant()">Add</button>
-                </div>
+        <!-- Login Panel -->
+        <div id="loginPanel" class="card" style="max-width: 400px; margin: 0 auto 30px;">
+            <h2 style="text-align: center; margin-bottom: 20px;">👤 Enter Your Name</h2>
+            <div class="form-group">
+                <input type="text" id="usernameInput" placeholder="Your username..." autocomplete="off">
+                <button onclick="setCurrentUser(document.getElementById('usernameInput').value); document.getElementById('usernameInput').value = '';">Login</button>
+            </div>
+            <p style="text-align: center; color: #999; font-size: 0.9em;">No password needed - just pick a name!</p>
+        </div>
 
-                <div id="restaurantList"></div>
-
-                <div id="emptyPreferences" class="empty-state">
-                    <p>No restaurants yet. Add some to get started!</p>
-                </div>
+        <!-- Main Content (hidden until logged in) -->
+        <div id="mainContent" style="display: none;">
+            <div style="text-align: right; margin-bottom: 20px;">
+                <button class="secondary" onclick="logout()" style="padding: 8px 16px; font-size: 0.9em;">
+                    👤 <span id="currentUsernameDisplay"></span> (Logout)
+                </button>
             </div>
 
-            <!-- Voting Card -->
-            <div class="card voting">
-                <h2>Today's Vote</h2>
-                <p style="color: #666; margin-bottom: 20px;">Will you be ordering today?</p>
-
-                <div class="voting-section">
-                    <button class="vote-btn yes" id="yesBtn" onclick="voteYes()">Yes, I'm In!</button>
-                    <button class="vote-btn no" id="noBtn" onclick="voteNo()">No, Not Today</button>
-                </div>
-
-                <div id="voteStatus" class="vote-status">Not voted yet</div>
-
-                <div class="stats">
-                    <div class="stat">
-                        <div class="stat-number" id="yesCount">0</div>
-                        <div class="stat-label">Ordering Today</div>
+            <div class="main-grid">
+                <!-- Preferences Card -->
+                <div class="card preferences">
+                    <h2>Your Preferences</h2>
+                    <div class="form-group">
+                        <input type="text" id="restaurantInput" placeholder="Enter restaurant name..."
+                            autocomplete="off">
+                        <button onclick="addRestaurant()">Add</button>
                     </div>
-                    <div class="stat">
-                        <div class="stat-number" id="totalPeople">0</div>
-                        <div class="stat-label">Total People</div>
+
+                    <div id="restaurantList"></div>
+
+                    <div id="emptyPreferences" class="empty-state">
+                        <p>No restaurants yet. Add some to get started!</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Suggestion Card -->
-            <div class="card suggestion full-width">
-                <h2>Today's Suggestion</h2>
-                <div id="suggestionBox" class="suggestion-box" style="display: none;">
-                    <div class="suggestion-label">Let's eat at</div>
-                    <div class="suggestion-name" id="suggestionName"></div>
-                    <div class="suggestion-reason" id="suggestionReason"></div>
+                <!-- Voting Card -->
+                <div class="card voting">
+                    <h2>Today's Vote</h2>
+                    <p style="color: #666; margin-bottom: 20px;">Will you be ordering today?</p>
+
+                    <div class="voting-section">
+                        <button class="vote-btn yes" id="yesBtn" onclick="voteYes()">Yes, I'm In!</button>
+                        <button class="vote-btn no" id="noBtn" onclick="voteNo()">No, Not Today</button>
+                    </div>
+
+                    <div id="voteStatus" class="vote-status">Not voted yet</div>
+
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-number" id="yesCount">0</div>
+                            <div class="stat-label">Ordering Today</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="totalPeople">0</div>
+                            <div class="stat-label">Total People</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div id="noSuggestion" class="empty-state">
-                    <p>Add restaurants and vote to get a suggestion!</p>
+                <!-- Suggestion Card -->
+                <div class="card suggestion full-width">
+                    <h2>Today's Suggestion</h2>
+                    <div id="suggestionBox" class="suggestion-box" style="display: none;">
+                        <div class="suggestion-label">Let's eat at</div>
+                        <div class="suggestion-name" id="suggestionName"></div>
+                        <div class="suggestion-reason" id="suggestionReason"></div>
+                    </div>
+
+                    <div id="noSuggestion" class="empty-state">
+                        <p>Add restaurants and vote to get a suggestion!</p>
+                    </div>
+
+                    <button class="get-suggestion-btn" onclick="generateSuggestion()">Get Suggestion</button>
+
+                    <button class="reset-btn" onclick="resetDaily()">Reset for Tomorrow</button>
                 </div>
-
-                <button class="get-suggestion-btn" onclick="generateSuggestion()">Get Suggestion</button>
-
-                <button class="reset-btn" onclick="resetDaily()">Reset for Tomorrow</button>
             </div>
         </div>
     </div>
 
     <script>
         const STORAGE_KEY = 'foodOrderData';
+        let currentUser = null;
 
         function initData() {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (!stored) {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                    restaurants: {},
-                    vote: null,
+                    currentUser: null,
+                    users: {},
                     lastDate: new Date().toDateString()
                 }));
             }
@@ -416,24 +444,64 @@
             const data = getData();
             const today = new Date().toDateString();
             if (data.lastDate !== today) {
-                data.vote = null;
+                // Reset all users' votes for new day
+                Object.keys(data.users).forEach(username => {
+                    data.users[username].vote = null;
+                });
                 data.lastDate = today;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
             }
         }
 
+        function setCurrentUser(username) {
+            if (!username.trim()) {
+                alert('Please enter a username');
+                return;
+            }
+
+            const data = getData();
+            const trimmedUsername = username.trim();
+
+            // Create user if doesn't exist
+            if (!data.users[trimmedUsername]) {
+                data.users[trimmedUsername] = {
+                    restaurants: {},
+                    vote: null
+                };
+            }
+
+            data.currentUser = trimmedUsername;
+            currentUser = trimmedUsername;
+            saveData(data);
+        }
+
+        function logout() {
+            const data = getData();
+            data.currentUser = null;
+            currentUser = null;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            render();
+        }
+
         function addRestaurant() {
+            if (!currentUser) {
+                alert('Please set a username first!');
+                return;
+            }
+
             const input = document.getElementById('restaurantInput');
             const name = input.value.trim();
             if (!name) return;
 
             const data = getData();
-            if (data.restaurants[name.toLowerCase()]) {
+            const userRestaurants = data.users[currentUser].restaurants;
+
+            if (userRestaurants[name.toLowerCase()]) {
                 alert('This restaurant is already on your list!');
                 return;
             }
 
-            data.restaurants[name.toLowerCase()] = {
+            userRestaurants[name.toLowerCase()] = {
                 name: name,
                 preference: null
             };
@@ -444,61 +512,100 @@
 
         function setPreference(restaurantKey, preference) {
             const data = getData();
-            data.restaurants[restaurantKey].preference = preference;
+            data.users[currentUser].restaurants[restaurantKey].preference = preference;
             saveData(data);
         }
 
         function deleteRestaurant(restaurantKey) {
             const data = getData();
-            delete data.restaurants[restaurantKey];
+            delete data.users[currentUser].restaurants[restaurantKey];
             saveData(data);
         }
 
         function voteYes() {
+            if (!currentUser) {
+                alert('Please set a username first!');
+                return;
+            }
             const data = getData();
-            data.vote = true;
+            data.users[currentUser].vote = true;
             saveData(data);
         }
 
         function voteNo() {
+            if (!currentUser) {
+                alert('Please set a username first!');
+                return;
+            }
             const data = getData();
-            data.vote = false;
+            data.users[currentUser].vote = false;
             saveData(data);
         }
 
         function generateSuggestion() {
             const data = getData();
 
-            if (data.vote === null) {
-                alert('Please vote first (Yes or No)!');
+            if (!currentUser) {
+                alert('Please set a username first!');
                 return;
             }
 
-            if (data.vote === false) {
-                showSuggestion('You opted out today', 'No suggestion for you!');
+            if (data.users[currentUser].vote !== true) {
+                alert('You need to vote "Yes, I\'m In!" to get a suggestion!');
                 return;
             }
 
-            const restaurants = Object.values(data.restaurants);
+            // Find all users voting yes
+            const votingYes = Object.entries(data.users).filter(([_, userData]) => userData.vote === true);
+
+            if (votingYes.length === 0) {
+                alert('No one is ordering today!');
+                return;
+            }
+
+            // Collect all restaurants from people voting yes
+            const allRestaurants = {};
+            votingYes.forEach(([username, userData]) => {
+                Object.entries(userData.restaurants).forEach(([key, restaurant]) => {
+                    if (!allRestaurants[key]) {
+                        allRestaurants[key] = {
+                            name: restaurant.name,
+                            likes: 0,
+                            dislikes: 0,
+                            neutral: 0
+                        };
+                    }
+                    if (restaurant.preference === 'like') allRestaurants[key].likes++;
+                    else if (restaurant.preference === 'dislike') allRestaurants[key].dislikes++;
+                    else allRestaurants[key].neutral++;
+                });
+            });
+
+            const restaurants = Object.values(allRestaurants);
             if (restaurants.length === 0) {
-                alert('Add some restaurants first!');
+                alert('No restaurants added! Ask your team to add some.');
                 return;
             }
 
-            // Score restaurants based on preferences
+            // Score restaurants
             const scored = restaurants.map(r => {
-                let score = Math.random(); // Base randomness
-                if (r.preference === 'like') score += 10;
-                if (r.preference === 'dislike') score -= 10;
-                if (r.preference === null) score += 5; // Neutral preference
+                let score = Math.random() * 5;
+                score += r.likes * 10;
+                score -= r.dislikes * 5;
+                score += r.neutral * 2;
                 return { ...r, score };
             });
 
             const best = scored.reduce((a, b) => a.score > b.score ? a : b);
-            let reason = 'Random pick';
-            if (best.preference === 'like') reason = 'You like this place!';
-            else if (best.preference === null) reason = 'Time to try something new!';
-            else reason = 'Taking a chance on this one!';
+            
+            let reason = 'Based on team preferences!';
+            if (best.likes > 0 && best.dislikes === 0) {
+                reason = `${best.likes} person${best.likes > 1 ? 's' : ''} like${best.likes > 1 ? '' : 's'} this place!`;
+            } else if (best.likes > best.dislikes) {
+                reason = `More likes than dislikes!`;
+            } else if (best.dislikes === 0) {
+                reason = 'Everyone is neutral or positive!';
+            }
 
             showSuggestion(best.name, reason);
         }
@@ -513,17 +620,36 @@
         function resetDaily() {
             if (confirm('Clear today\'s vote and reset for tomorrow?')) {
                 const data = getData();
-                data.vote = null;
+                data.users[currentUser].vote = null;
                 saveData(data);
             }
         }
 
         function render() {
             const data = getData();
+            
+            // Initialize currentUser from storage
+            if (!currentUser && data.currentUser) {
+                currentUser = data.currentUser;
+            }
 
-            // Render restaurants
+            // Show login or main content
+            const loginPanel = document.getElementById('loginPanel');
+            const mainContent = document.getElementById('mainContent');
+
+            if (!currentUser) {
+                loginPanel.style.display = 'block';
+                mainContent.style.display = 'none';
+                return;
+            } else {
+                loginPanel.style.display = 'none';
+                mainContent.style.display = 'block';
+                document.getElementById('currentUsernameDisplay').textContent = currentUser;
+            }
+
+            // Render restaurants for current user
             const list = document.getElementById('restaurantList');
-            const restaurants = Object.entries(data.restaurants);
+            const restaurants = Object.entries(data.users[currentUser].restaurants);
             const empty = document.getElementById('emptyPreferences');
 
             if (restaurants.length === 0) {
@@ -551,27 +677,30 @@
                 `).join('');
             }
 
-            // Render votes
+            // Render current user's vote
             const yesBtn = document.getElementById('yesBtn');
             const noBtn = document.getElementById('noBtn');
             const voteStatus = document.getElementById('voteStatus');
+            const userVote = data.users[currentUser].vote;
 
             yesBtn.classList.remove('active');
             noBtn.classList.remove('active');
 
-            if (data.vote === true) {
+            if (userVote === true) {
                 yesBtn.classList.add('active');
                 voteStatus.innerHTML = '✅ You voted <strong>YES</strong> - You\'re ordering today!';
-            } else if (data.vote === false) {
+            } else if (userVote === false) {
                 noBtn.classList.add('active');
                 voteStatus.innerHTML = '❌ You voted <strong>NO</strong> - Sitting this one out.';
             } else {
                 voteStatus.innerHTML = 'Not voted yet';
             }
 
-            // Update stats (simplified - assuming 1 person for now)
-            document.getElementById('yesCount').textContent = data.vote === true ? 1 : 0;
-            document.getElementById('totalPeople').textContent = 1;
+            // Update overall stats
+            const yesCount = Object.values(data.users).filter(u => u.vote === true).length;
+            const totalPeople = Object.keys(data.users).length;
+            document.getElementById('yesCount').textContent = yesCount;
+            document.getElementById('totalPeople').textContent = totalPeople;
         }
 
         // Initialize on load
@@ -583,6 +712,17 @@
             document.getElementById('restaurantInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') addRestaurant();
             });
+
+            // Allow Enter key for username login
+            const usernameInput = document.getElementById('usernameInput');
+            if (usernameInput) {
+                usernameInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        setCurrentUser(usernameInput.value);
+                        usernameInput.value = '';
+                    }
+                });
+            }
         });
     </script>
 </body>
